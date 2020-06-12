@@ -5,10 +5,23 @@
 #include "utils.hpp"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-void cutSmall();
+    void load(char *dictPath,
+              char *modelPath,
+              char *userDictPath,
+              char *idfPath,
+              char *stopWordsPath);
+    // void cut();
+    // void cutAll();
+    // void cutHMM();
+    // void cutForSearch();
+    const char *cutSmall(char *sentence, std::int32_t max_word_len);
+    // void tag();
+    // void extract();
+    // void insertWord();
 
 #ifdef __cplusplus
 }
