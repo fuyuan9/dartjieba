@@ -1,8 +1,11 @@
 #ifndef DARTJIBA_SRC_DARTJIBA_H
 #define DARTJIBA_SRC_DARTJIBA_H
 
+#include <string>
+#include <vector>
 #include "cppjieba/Jieba.hpp"
-#include "utils.hpp"
+
+using namespace std;
 
 #ifdef __cplusplus
 extern "C"
@@ -18,7 +21,7 @@ extern "C"
     // void cutAll();
     // void cutHMM();
     // void cutForSearch();
-    const char *cutSmall(char *sentence, std::int32_t max_word_len);
+    char *cutSmall(char *sentence, std::int32_t max_word_len);
     // void tag();
     // void extract();
     // void insertWord();

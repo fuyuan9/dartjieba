@@ -22,20 +22,19 @@ void load(
 // void cutHMM(){}
 // void cutForSearch(){}
 
-const char *cutSmall(char *sentence, std::int32_t max_word_len)
+char *cutSmall(char *sentence, std::int32_t max_word_len)
 {
-    // uint32_t to size_t
-    // size_t len = (max_word_len < 0) ? __SIZE_MAX__ : (size_t)((unsigned)max_word_len);
-    size_t len = 3;
+    // int32_t to size_t
+    size_t len = (max_word_len < 0) ? __SIZE_MAX__ : (size_t)((unsigned)max_word_len);
 
     std::vector<string> words;
 
     global_jieba_handle->CutSmall(sentence, words, len);
 
     std::string tmp_result = limonp::Join(words.begin(), words.end(), "/");
-    cout << tmp_result << endl;
+    // cout << tmp_result << endl;
 
-    return tmp_result.c_str();
+    return strdup(tmp_result.c_str());
 }
 
 // void tag(){}
