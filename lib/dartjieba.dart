@@ -1,7 +1,6 @@
 import 'dart:ffi';
-import 'dart:io' show Platform;
+
 import 'package:ffi/ffi.dart';
-import 'package:path/path.dart' show dirname, join;
 
 typedef dartjieba_load = Void Function(
     Pointer<Utf8> dictPath,
@@ -21,37 +20,42 @@ typedef dartjieba_cut_small = Pointer<Utf8> Function(
 typedef DartJiebaCutSmall = Pointer<Utf8> Function(
     Pointer<Utf8> sentence, int maxWordLength);
 
-final basePath = Platform.script.path;
-final dylibPath =
-    join(dirname(basePath), '../dartjieba_library/libdartjieba.dylib');
-final dylib = DynamicLibrary.open(dylibPath);
-final DartJiebaLoad nativeLoad =
-    dylib.lookup<NativeFunction<dartjieba_load>>('load').asFunction();
-final DartJiebaCutSmall nativeCutSmall =
-    dylib.lookup<NativeFunction<dartjieba_cut_small>>('cutSmall').asFunction();
-
 class DartJieba {
-  DartJieba() {
-    final dictPath = Utf8.toUtf8(
-        join(dirname(basePath), '../dartjieba_library/dict/jieba.dict.utf8'));
-    final modelPath = Utf8.toUtf8(
-        join(dirname(basePath), '../dartjieba_library/dict/hmm_model.utf8'));
-    final userDictPath = Utf8.toUtf8(
-        join(dirname(basePath), '../dartjieba_library/dict/user.dict.utf8'));
-    final idfPath = Utf8.toUtf8(
-        join(dirname(basePath), '../dartjieba_library/dict/idf.utf8'));
-    final stopWordsPath = Utf8.toUtf8(
-        join(dirname(basePath), '../dartjieba_library/dict/stop_words.utf8'));
+  final String dylibPath;
+  final String dictPath;
+  final String modelPath;
+  final String userDictPath;
+  final String idfPath;
+  final String stopWordsPath;
+  DynamicLibrary _dylib;
 
-    nativeLoad(dictPath, modelPath, userDictPath, idfPath, stopWordsPath);
+  DartJieba(this.dylibPath, this.dictPath, this.modelPath, this.userDictPath,
+      this.idfPath, this.stopWordsPath) {
+    final _dictPath = Utf8.toUtf8(dictPath);
+    final _modelPath = Utf8.toUtf8(modelPath);
+    final _userDictPath = Utf8.toUtf8(userDictPath);
+    final _idfPath = Utf8.toUtf8(idfPath);
+    final _stopWordsPath = Utf8.toUtf8(stopWordsPath);
 
-    free(dictPath);
-    free(modelPath);
-    free(userDictPath);
-    free(idfPath);
-    free(stopWordsPath);
+    _dylib = DynamicLibrary.open(dylibPath);
+
+    final DartJiebaLoad nativeLoad =
+        _dylib.lookup<NativeFunction<dartjieba_load>>('load').asFunction();
+
+    nativeLoad(_dictPath, _modelPath, _userDictPath, _idfPath, _stopWordsPath);
+
+    free(_dictPath);
+    free(_modelPath);
+    free(_userDictPath);
+    free(_idfPath);
+    free(_stopWordsPath);
   }
+
   List<String> cutSmall(String sentence, int maxWordLength) {
+    final DartJiebaCutSmall nativeCutSmall = _dylib
+        .lookup<NativeFunction<dartjieba_cut_small>>('cutSmall')
+        .asFunction();
+
     final _sentence = Utf8.toUtf8(sentence);
     final _result = Utf8.fromUtf8(nativeCutSmall(_sentence, maxWordLength));
 
@@ -61,9 +65,4 @@ class DartJieba {
 
     return _list;
   }
-}
-
-main() {
-  List<String> value = DartJieba().cutSmall('南京市长江大桥', 3);
-  print(value.join(', '));
 }
