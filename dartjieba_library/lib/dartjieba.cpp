@@ -17,28 +17,70 @@ void load(
                                               stopWordsPath);
 }
 
-// void cut(){}
-// void cutAll(){}
-// void cutHMM(){}
-// void cutForSearch(){}
+char *cut(char *sentence, bool hmm)
+{
+    vector<string> words;
 
-char *cutSmall(char *sentence, std::int32_t max_word_len)
+    global_jieba_handle->Cut(sentence, words, hmm);
+
+    string tmp_result = "TODO";
+
+    return strdup(tmp_result.c_str());
+}
+
+char *cutAll(char *sentence)
+{
+    vector<string> words;
+
+    global_jieba_handle->CutAll(sentence, words);
+
+    string tmp_result = "TODO";
+
+    return strdup(tmp_result.c_str());
+}
+
+char *cutForSearch(char *sentence, bool hmm)
+{
+    vector<string> words;
+
+    global_jieba_handle->CutAll(sentence, words, hmm);
+
+    string tmp_result = "TODO";
+
+    return strdup(tmp_result.c_str());
+}
+
+char *cutHMM(char *sentence)
+{
+    vector<string> words;
+
+    global_jieba_handle->CutHMM(sentence, words, hmm);
+
+    string tmp_result = "TODO";
+    return strdup(tmp_result.c_str());
+}
+    
+char *cutSmall(char *sentence, int32_t max_word_len)
 {
     // int32_t to size_t
     size_t len = (max_word_len < 0) ? __SIZE_MAX__ : (size_t)((unsigned)max_word_len);
 
-    std::vector<string> words;
+    vector<string> words;
 
     global_jieba_handle->CutSmall(sentence, words, len);
 
-    std::string tmp_result = limonp::Join(words.begin(), words.end(), "/");
+    string tmp_result = limonp::Join(words.begin(), words.end(), "/");
     // cout << tmp_result << endl;
 
     return strdup(tmp_result.c_str());
 }
 
-// void tag(){}
-// void extract(){}
-// void insertWord(){}
+char *tag(char *sentence)
+{
+    // vector<string> words;
 
-// int main(){return 0;}
+    // global_jieba_handle->Tag(sentence, words, hmm);
+
+    string tmp_result = "TODO";
+    return strdup(tmp_result.c_str());
+}

@@ -1,4 +1,6 @@
 import 'dart:ffi';
+import 'dart:async' show Future;
+import 'dart:isolate' show Isolate;
 
 import 'package:ffi/ffi.dart';
 
@@ -20,35 +22,109 @@ typedef dartjieba_cut_small = Pointer<Utf8> Function(
 typedef DartJiebaCutSmall = Pointer<Utf8> Function(
     Pointer<Utf8> sentence, int maxWordLength);
 
+/// Helper function for resolving to a non-relative, non-package URI.
+Future<Uri> resolveUri(Uri uri) {
+  if (uri.scheme == 'package') {
+    return Isolate.resolvePackageUri(uri).then((resolvedUri) {
+      if (resolvedUri == null) {
+        throw ArgumentError.value(uri, 'uri', 'Unknown package');
+      }
+      return resolvedUri;
+    });
+  }
+  return Future<Uri>.value(Uri.base.resolveUri(uri));
+}
+
 class DartJieba {
-  final String dylibPath;
-  final String dictPath;
-  final String modelPath;
-  final String userDictPath;
-  final String idfPath;
-  final String stopWordsPath;
+  String _dylibPath;
+  String _dictPath;
+  String _modelPath;
+  String _userDictPath;
+  String _idfPath;
+  String _stopWordsPath;
   DynamicLibrary _dylib;
 
-  DartJieba(this.dylibPath, this.dictPath, this.modelPath, this.userDictPath,
-      this.idfPath, this.stopWordsPath) {
-    final _dictPath = Utf8.toUtf8(dictPath);
-    final _modelPath = Utf8.toUtf8(modelPath);
-    final _userDictPath = Utf8.toUtf8(userDictPath);
-    final _idfPath = Utf8.toUtf8(idfPath);
-    final _stopWordsPath = Utf8.toUtf8(stopWordsPath);
+  Future<DartJieba> load({
+    dylibPath,
+    dictPath,
+    modelPath,
+    userDictPath,
+    idfPath,
+    stopWordsPath,
+  }) async {
+    if (dylibPath == null) {
+      final Uri dylibUri =
+          await resolveUri(Uri.parse('./dartjieba_library/libdartjieba.dylib'));
+      this._dylibPath = dylibUri.path;
+    } else {
+      this._dylibPath = dylibPath;
+    }
+    print(this._dylibPath);
 
-    _dylib = DynamicLibrary.open(dylibPath);
+    if (dictPath == null) {
+      final Uri dictUri = await resolveUri(
+          Uri.parse('./dartjieba_library/dict/jieba.dict.utf8'));
+      this._dictPath = dictUri.path;
+    } else {}
+    print(this._dictPath);
+
+    if (modelPath == null) {
+      final Uri modelUri = await resolveUri(
+          Uri.parse('./dartjieba_library/dict/hmm_model.utf8'));
+      this._modelPath = modelUri.path;
+    } else {
+      this._modelPath = modelPath;
+    }
+    print(this._modelPath);
+
+    if (userDictPath == null) {
+      final Uri userDictUri = await resolveUri(
+          Uri.parse('./dartjieba_library/dict/user.dict.utf8'));
+      this._userDictPath = userDictUri.path;
+    } else {
+      this._userDictPath = userDictPath;
+    }
+    print(this._userDictPath);
+
+    if (idfPath == null) {
+      final Uri idfUri =
+          await resolveUri(Uri.parse('./dartjieba_library/dict/idf.utf8'));
+      this._idfPath = idfUri.path;
+    } else {
+      this._idfPath = idfPath;
+    }
+    print(this._idfPath);
+
+    if (stopWordsPath == null) {
+      final Uri stopWordsUri = await resolveUri(
+          Uri.parse('./dartjieba_library/dict/stop_words.utf8'));
+      this._stopWordsPath = stopWordsUri.path;
+    } else {
+      this._stopWordsPath = stopWordsPath;
+    }
+    print(this._stopWordsPath);
+
+    final dictPathPointer = Utf8.toUtf8(this._dictPath);
+    final modelPathPointer = Utf8.toUtf8(this._modelPath);
+    final userDictPathPointer = Utf8.toUtf8(this._userDictPath);
+    final idfPathPointer = Utf8.toUtf8(this._idfPath);
+    final stopWordsPathPointer = Utf8.toUtf8(this._stopWordsPath);
+
+    this._dylib = DynamicLibrary.open(this._dylibPath);
 
     final DartJiebaLoad nativeLoad =
         _dylib.lookup<NativeFunction<dartjieba_load>>('load').asFunction();
 
-    nativeLoad(_dictPath, _modelPath, _userDictPath, _idfPath, _stopWordsPath);
+    nativeLoad(dictPathPointer, modelPathPointer, userDictPathPointer,
+        idfPathPointer, stopWordsPathPointer);
 
-    free(_dictPath);
-    free(_modelPath);
-    free(_userDictPath);
-    free(_idfPath);
-    free(_stopWordsPath);
+    free(dictPathPointer);
+    free(modelPathPointer);
+    free(userDictPathPointer);
+    free(idfPathPointer);
+    free(stopWordsPathPointer);
+
+    return this;
   }
 
   List<String> cutSmall(String sentence, int maxWordLength) {

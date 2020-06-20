@@ -12,19 +12,19 @@ extern "C"
 {
 #endif
 
-    void load(char *dictPath,
-              char *modelPath,
-              char *userDictPath,
-              char *idfPath,
-              char *stopWordsPath);
-    // void cut();
-    // void cutAll();
-    // void cutHMM();
-    // void cutForSearch();
-    char *cutSmall(char *sentence, std::int32_t max_word_len);
-    // void tag();
-    // void extract();
-    // void insertWord();
+    void load(char *dictPath, char *modelPath, char *userDictPath, char *idfPath, char *stopWordsPath);
+    
+    char *cut(char *sentence, bool hmm);
+    
+    char *cutAll(char *sentence);
+    
+    char *cutForSearch(char *sentence, bool hmm);
+    
+    char *cutHMM(char *sentence);
+    
+    char *cutSmall(char *sentence, int32_t max_word_len);
+
+    char *tag(char *sentence);
 
 #ifdef __cplusplus
 }
